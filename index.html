@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cclab</title>
+</head>
+
+<body>
+    <pre>
+        <code>
+            CCV LAB
+CAESER CIPHER
+import java.util.Scanner;
+public class CaesarCipher {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter the message to encrypt: ");
+        String message = scanner.nextLine().toUpperCase();
+        System.out.print("Enter the shift key (an integer from 1 to 25): ");
+        int shiftKey = scanner.nextInt();
+        if (shiftKey < 1 || shiftKey > 25) {
+            System.out.println("Invalid shift key. Please enter an integer between 1 and 25.");
+            return;
+        }
+        String encryptedMessage = encrypt(message, shiftKey);
+        System.out.println("Encrypted message: " + encryptedMessage);
+        String decryptedMessage = decrypt(encryptedMessage, shiftKey);
+        System.out.println(" Decrypted message: " + decryptedMessage);
+        scanner.close();
+    }
+    public static String encrypt(String plaintext, int shift) {
+        StringBuilder encryptedText = new StringBuilder();
+        for (int i = 0; i < plaintext.length(); i++) {
+            char currentChar = plaintext.charAt(i);
+            if (Character.isLetter(currentChar)) {
+                char shiftedChar = (char) (((currentChar - 'A' + shift) % 26) + 'A');
+                encryptedText.append(shiftedChar);
+       } else {
+                encryptedText.append(currentChar);
+            }
+        }
+        return encryptedText.toString();
+    }
+    public static String decrypt(String encryptedText, int shift) {
+        return encrypt(encryptedText, 26 - shift);
+    }
+}
+RESULT:
+Enter the message to encrypt: computer
+Enter the shift key (an integer from 1 to 25): 3
+Encrypted message: FRPSXWHU
+Decrypted message: COMPUTER
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PLAYFAIR CIPHER
+import java.util.Scanner;
+
+public class PlayfairCipher {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter the keyword: ");
+        String key = scanner.nextLine().replaceAll("[^a-zA-Z]", "").toUpperCase();
+        key = key.replaceAll("J", "I");
+
+        // Generate the matrix
+        char[][] matrix = generateMatrix(key);
+
+        // Encrypt message
+        System.out.println("Enter the message to encrypt: ");
+        String message = scanner.nextLine().replaceAll("[^a-zA-Z]", "").toUpperCase();
+        message = message.replaceAll("J", "I");
+        
+                // Display the matrix
+        System.out.println("The generated matrix is:");
+        displayMatrix(matrix);
+
+        // Encrypt the message
+        String encryptedMessage = encryptMessage(message, matrix);
+        System.out.println("Encrypted message: " + encryptedMessage);
+
+        scanner.close();
+    }
+
+    static char[][] generateMatrix(String key) {
+        char[][] matrix = new char[5][5];
+        boolean[] exists = new boolean[26];
+        int index = 0;
+
+        for (char c : key.toCharArray()) {
+            if (c == ' ') continue;
+            if (!exists[c - 'A']) {
+                matrix[index / 5][index % 5] = c;
+                exists[c - 'A'] = true;
+                index++;
+            }
+        }
+
+        for (char c = 'A'; c <= 'Z'; c++) {
+            if (c == 'J') continue;
+            if (!exists[c - 'A']) {
+                matrix[index / 5][index % 5] = c;
+                exists[c - 'A'] = true;
+                index++;
+            }
+        }
+
+        return matrix;
+    }
+
+    static void displayMatrix(char[][] matrix) {
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                System.out.print(matrix[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    static String encryptMessage(String message, char[][] matrix) {
+        StringBuilder preparedText = new StringBuilder();
+        for (int i = 0; i < message.length(); i += 2) {
+            if (i + 1 < message.length()) {
+                if (message.charAt(i) == message.charAt(i + 1)) {
+                    preparedText.append(message.charAt(i)).append('X');
+                    i--;
+                } else {
+                    preparedText.append(message.charAt(i)).append(message.charAt(i + 1));
+                }
+            } else {
+                preparedText.append(message.charAt(i)).append('X');
+            }
+        }
+
+        StringBuilder encryptedText = new StringBuilder();
+        for (int i = 0; i < preparedText.length(); i += 2) {
+            char a = preparedText.charAt(i);
+            char b = preparedText.charAt(i + 1);
+            int[] posA = findPosition(a, matrix);
+            int[] posB = findPosition(b, matrix);
+
+            if (posA[0] == posB[0]) {
+                encryptedText.append(matrix[posA[0]][(posA[1] + 1) % 5]);
+                encryptedText.append(matrix[posB[0]][(posB[1] + 1) % 5]);
+            } else if (posA[1] == posB[1]) {
+                encryptedText.append(matrix[(posA[0] + 1) % 5][posA[1]]);
+                encryptedText.append(matrix[(posB[0] + 1) % 5][posB[1]]);
+            } else {
+                encryptedText.append(matrix[posA[0]][posB[1]]);
+                encryptedText.append(matrix[posB[0]][posA[1]]);
+            }
+        }
+
+        return encryptedText.toString();
+    }
+
+    static int[] findPosition(char a, char[][] matrix) {
+        int[] pos = new int[2];
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                if (matrix[i][j] == a) {
+                    pos[0] = i;
+                    pos[1] = j;
+                }
+            }
+        }
+        return pos;
+    }
+}
+RESULT:
+Enter the keyword: security
+Enter the message to encrypt: 
+cryptography
+The generated matrix is:
+S E C U R 
+I T Y A B 
+D F G H K 
+L M N O P 
+Q V W X Z 
+Encrypted message: USBNAMKCBOGA
+
+
+
+
+
+
+
+
+
+
+
+
+
+HILL CIPHER
+import java.util.Scanner;
+
+public class HillCipher {
+
+    public static void main(String[] args) {
+        int key[][] = {{17, 17, 5}, {21, 18, 21}, {2, 2, 19}};
+        int p[] = new int[300];
+        int c[] = new int[300];
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter plain text:");
+        String str = scanner.nextLine().replaceAll("[^a-zA-Z]", "").toLowerCase();
+
+        for (int i = 0; i < str.length(); i++) {
+            p[i] = str.charAt(i) - 'a';
+        }
+
+        int index = 0;
+        for (int block = 0; block < str.length() / 3; block++) {
+            for (int j = 0; j < 3; j++) {
+                for (int x = 0; x < 3; x++) {
+                    c[index] += key[j][x] * p[x + block * 3];
+                }
+                index++;
+            }
+        }
+
+        System.out.println("Encrypted Text:");
+        for (int z = 0; z < str.length(); z++) {
+            System.out.print((char) ((c[z] % 26) + 'a'));
+        }
+        scanner.close();
+    }
+}
+RESULT
+Enter plain text:
+paymoremoney
+Encrypted Text:
+Lnshdlewmtrw
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+VIGENERE CIPHER
+import java.util.Scanner;
+
+public class VigenereCipher {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String alphabet = "abcdefghijklmnopqrstuvwxyz";
+        char[][] table = new char[26][26];
+        
+        System.out.println("Enter the key and plaintext:");
+        String key = sc.next();
+        String msg = sc.next();
+
+        // Encryption
+        StringBuilder enmsg = new StringBuilder();
+        for (int i = 0; i < msg.length(); i++) {
+            char k = key.charAt(i % key.length());
+            int row = alphabet.indexOf(k);
+            int col = alphabet.indexOf(msg.charAt(i));
+            enmsg.append(alphabet.charAt((col + row) % 26));
+        }
+        System.out.println("Cipher Text: " + enmsg);
+
+        // Decryption
+        StringBuilder plmsg = new StringBuilder();
+        for (int i = 0; i < enmsg.length(); i++) {
+            char k = key.charAt(i % key.length());
+            int row = alphabet.indexOf(k);
+            int col = alphabet.indexOf(enmsg.charAt(i));
+            plmsg.append(alphabet.charAt(((col - row + 26) % 26)));
+        }
+        System.out.println("Plain Text: " + plmsg);
+    }
+}
+RESULT:
+Enter the key and plaintext:
+deceptive
+wearediscoveredsaveyourself
+Cipher Text: zicvtwqngrzgvtwavzhcqyglmgj
+Plain Text: wearediscoveredsaveyourself
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RAIL FENCE
+import java.util.Scanner;
+
+public class RailFenceCipher {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter the message:");
+        String message = sc.next();
+        String encryptedText = "";
+        for (int i = 0; i < message.length(); i++) {
+            encryptedText += (i % 2 == 0) ? message.charAt(i) : "";
+        }
+        for (int i = 0; i < message.length(); i++) {
+            encryptedText += (i % 2 != 0) ? message.charAt(i) : "";
+        }
+        System.out.println("Cipher Text: " + encryptedText);
+        int half = encryptedText.length() / 2;
+        int offset = encryptedText.length() % 2 == 0 ? 0 : 1;
+        String decryptedText = "";
+        for (int i = 0; i < half; i++) {
+            decryptedText += encryptedText.charAt(i);
+            decryptedText += encryptedText.charAt(i + half + offset);
+        }
+        if (offset > 0) {
+            decryptedText += encryptedText.charAt(half * 2);
+        }
+        System.out.println("Plain Text: " + decryptedText);
+    }
+}
+RESULT:
+Enter the message:meetmeafterthetogaparty
+Cipher Text: mematrhtgpryetefeteoaat
+Plain Text: meetmeafterthetogapartt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DES
+import javax.crypto.*;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
+
+public class DES {
+    public static void main(String[] args) {
+        try {
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Enter your message: ");
+            String message = scanner.nextLine();
+
+            SecretKey secretKey = KeyGenerator.getInstance("DES").generateKey();
+            Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+
+            // Encrypt
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            byte[] encryptedData = cipher.doFinal(message.getBytes(StandardCharsets.UTF_8));
+            System.out.println("Encrypted Data: " + new String(encryptedData, StandardCharsets.UTF_8));
+
+            // Decrypt
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            byte[] decryptedData = cipher.doFinal(encryptedData);
+            System.out.println("Decrypted Data: " + new String(decryptedData, StandardCharsets.UTF_8));
+
+            scanner.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+RESULT:
+Enter your message: Classified Information!
+Encrypted Data: ???&?a?g?-??}W???EJf??  (this will change based on compiler so no prob)
+Decrypted Data: Classified Information!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+AES
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.util.Base64;
+import java.util.Scanner;
+
+public class AESExample {
+    public static void main(String[] args) {
+        try {
+            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+            keyGenerator.init(128);
+            SecretKey secretKey = keyGenerator.generateKey();
+            Cipher cipher = Cipher.getInstance("AES");
+
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Enter a message to encrypt: ");
+            String plainText = scanner.nextLine();
+
+            String encryptedText = encrypt(plainText, secretKey, cipher);
+            System.out.println("Encrypted Text: " + encryptedText);
+
+            String decryptedText = decrypt(encryptedText, secretKey, cipher);
+            System.out.println("Decrypted Text: " + decryptedText);
+
+            scanner.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String encrypt(String plainText, SecretKey secretKey, Cipher cipher) throws Exception {
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        byte[] encryptedByte = cipher.doFinal(plainText.getBytes());
+        return Base64.getEncoder().encodeToString(encryptedByte);
+    }
+
+    public static String decrypt(String encryptedText, SecretKey secretKey, Cipher cipher) throws Exception {
+        byte[] encryptedByte = Base64.getDecoder().decode(encryptedText);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        byte[] decryptedByte = cipher.doFinal(encryptedByte);
+        return new String(decryptedByte);
+    }
+}
+RESULT:
+Enter a message to encrypt: AES Symmetric Encryption Decryption
+Encrypted Text: UxLrngsD2RfJa3TNXhpgeBpzw2lL79RXlGgCAqeHGKwDHc5iaRm5v7IKzHa7YTGx
+Decrypted Text: AES Symmetric Encryption Decryption
+
+
+
+
+
+
+
+
+RSA
+import java.math.BigInteger;
+import java.util.Random;
+import java.util.Scanner;
+
+public class RSA {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter a prime number (p): ");
+        BigInteger p = sc.nextBigInteger();
+        System.out.print("Enter another prime number (q): ");
+        BigInteger q = sc.nextBigInteger();
+        BigInteger n = p.multiply(q);
+        BigInteger n2 = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE));
+        BigInteger e = generateE(n2);
+        BigInteger d = e.modInverse(n2);
+
+        System.out.println("Public Key (e, n): " + e + ", " + n);
+        System.out.println("Private Key (d, n): " + d + ", " + n);
+
+        System.out.print("Enter message (plaintext): ");
+        BigInteger m = sc.nextBigInteger();
+        BigInteger c = encrypt(m, e, n);
+        System.out.println("Ciphertext: " + c);
+        System.out.println("Decrypted message (plaintext): " + decrypt(c, d, n));
+    }
+
+    public static BigInteger generateE(BigInteger fiofn) {
+        int y;
+        BigInteger e;
+        BigInteger gcd;
+        Random x = new Random();
+        do {
+            y = x.nextInt(fiofn.intValue() - 1);
+            e = BigInteger.valueOf(y);
+            gcd = fiofn.gcd(e);
+        } while (y <= 2 || !gcd.equals(BigInteger.ONE));
+        return e;
+    }
+
+    public static BigInteger encrypt(BigInteger m, BigInteger e, BigInteger n) {
+        return m.modPow(e, n);
+    }
+
+    public static BigInteger decrypt(BigInteger c, BigInteger d, BigInteger n) {
+        return c.modPow(d, n);
+    }
+}
+RESULT:
+Enter a prime number (p): 7
+Enter another prime number (q): 11
+Public Key (e, n): 49, 77
+Private Key (d, n): 49, 77
+Enter message (plaintext): 6
+Ciphertext: 13
+Decrypted message (plaintext): 6
+
+DSA ALGORITHM
+import java.io.*;
+import java.security.*;
+
+class GenSig {
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("Usage: GenSig <filename>");
+            return;
+        }
+
+        try {
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DSA");
+            keyGen.initialize(1024);
+            KeyPair pair = keyGen.generateKeyPair();
+            PrivateKey priv = pair.getPrivate();
+            PublicKey pub = pair.getPublic();
+
+            Signature dsa = Signature.getInstance("SHA1withDSA");
+            dsa.initSign(priv);
+
+            byte[] buffer = new byte[1024];
+            FileInputStream fis = new FileInputStream(args[0]);
+
+            while (fis.available() > 0) {
+                int len = fis.read(buffer);
+                dsa.update(buffer, 0, len);
+            }
+            fis.close();
+
+            byte[] realSig = dsa.sign();
+            try (FileOutputStream sigfos = new FileOutputStream("sig")) {
+                sigfos.write(realSig);
+            }
+            try (FileOutputStream keyfos = new FileOutputStream("suepk")) {
+                keyfos.write(pub.getEncoded());
+            }
+        } catch (Exception e) {
+            System.err.println("Exception: " + e.toString());
+        }
+    }
+}
+RESULT:
+
+  
+
+
+
+Date:
+Install Virtualbox/VMware Workstation with different flavours of linux or windows OS on top of windows7 or 8 and execute Simple Programs
+
+
+AIM:
+
+To installVirtualbox/VMware workstation with different flavours of linux or windows OS on top of windows 7 or 8 and execute Simple C programs.
+Steps to install VMware on windows 10/8/7
+Download VMware-workstation-full-16.1.2 software from www.vmware.com
+Double-click on	downloaded VMware-workstation-full-16.1.2-17966106.exe	file	to bring up the welcome screen.
+Click on Next button to start VMware installation Setup Wizard
+
+
+
+At this stage, you will see a check box to accept the license agreement.
+I Accept the terms in the License Agreement.
+Click on the check box and Click NEXT button.
+
+
+By default the VMware will install its core files in the C: drive. Incase you have low space on the C: drive , then just click on the Change button and select the location where you want to install it.However , if you are not acquainted with this option then simply leave it as default and then there are two check boxes ,
+Enhanced Keyboard Driver
+Add VMware Workstation console tools into system PATH.
+Click on the check boxes and click on NEXT button.
+
+
+In the User Experience Settings there are 2 check boxes
+Check for product update on startup
+Join the vmware Customer Experience Improvement Program
+Click on the check boxes and click on NEXT button.
+
+Next Shortcuts to be created ,
+Desktop : To create shortcuts for vmware Workstation on desktop
+Start Menu Program Folder : Will get added to the start menu. Click on the check boxes and click on NEXT button.
+
+Clik on the Install button to begin the installation.
+
+
+After installing, the installation wizard will show you a Finish button, click on that and it will ask to restart the system once the installation is over.
+
+
+Click on YES button to restart the system.
+
+Once the system is restarted , double click on VMware workstation to open. Enter the license key mentioned below and click on Continue button.
+ZF3R0-FHED2-M80TY-8QYGC-NPKYF
+
+Click on Finish button and it will start the VMware on your Windows10/7/8 machines.
+
+
+Install Ubuntu on VirtualBox:
+Visit the page http://www.ubuntu.com/download/ubuntu/download
+Run VMware by double-clicking the icon
+Click “Create a New Virtual Machine” button at the center.
+
+
+
+Select Custom ( advanced ) radio button and click on NEXT button.
+
+
+Then Click on NEXT Button
+Click on the Installer disk image file (iso) : radio button and click on Browse button to give the ubuntu-20.04.2.0-desktop-amd64.iso path to install the OS. Click on Next button to proceed.
+
+
+Enter the Full name as ubuntu , User name as ubuntu and enter the password as
+cse123. Then click on NEXT Button.
+By default the virtual machine name and path will be displayed. In case you have low space on the C: drive , then just click on the Browse button and select the location where you want to install it. However , if you are not acquainted with this option then leave it as default and click on NEXT Button.
+
+
+Choose the amount of memory as 8GB and then click on NEXT button.
+
+In the Network Type , Select the radio button mentioned below,
+Use bridged networking – give the guest operating system direct access to an external Ethernet network. The guest must have its own IP address on the external network.
+Click on NEXT button to proceed.
+
+
+Select the I/O controller types as LSI Logic from the SCSI controllers mentioned and click on Next button.
+
+
+Under Virtual disk type select SCSI radio button and click on Next button.
+
+
+Under Disk type select Create a new virtual disk radio button and click on Next
+button.
+
+
+Give the Maximum disk size as 110 GB and select the Split virtual disk into multiple files radio button.Click on next button.
+
+
+
+The disk files will be automatically named based on the OS file name , click on Next button.
+
+Click Power on this virtual machine after creation check box and Finish button.
+
+
+
+After which Ubuntu is being installed by taking the files from iso file and installing one by one.
+
+
+Once installation is completed , click on Restart Now Button.
+
+
+Press Enter key on keyboard , click on user and provide the password as cse123 and login.
+
+
+
+Click on Skip Button on top right corner.
+
+
+Click on Next Button on top right corner.
+
+
+
+Click on Next Button on top right corner.
+
+
+Click on Next Button on top right corner.
+
+
+
+Click on Done Button on top right corner.
+
+
+
+
+
+
+Ubuntu Desktop after installation has completed successfully.
+
+
+
+Install a C compiler in the virtual machine created using VMware and execute Simple Programs
+
+PROCEDURE:
+Step1: Open Terminal (Applications-Accessories-Terminal)
+Step2: Update the guest system by typing this commands to update repositories and upgrade the emulated system
+
+# sudo apt update
+
+# sudo apt upgrade –y Step3: Install c compiler. # sudo apt install gcc
+
+
+Enter Y to denote yes to continue the installation and press Enter Key.
+
+
+
+Step3: Open text file to type the program.
+
+# gedit hello.c
+
+Step4: Type the code on the gedit.
+
+#include<stdio.h> int main()
+{
+Printf(“Hello \n”);
+}
+
+
+
+
+Step5: Save the file.
+Step6: Compile the program.
+# gcc hello.c
+
+Step7: Run the program.
+
+# ./a.out
+
+
+RESULT:
+Thus the installation of Vmware with linux-20.04 OS on top of windows7,8,10 and simple C Program has been executed successfully.
+
+
+
+Ex.No.9
+Date:
+Simulate a cloud scenario using CloudSim and run a scheduling algorithm that
+is not present in CloudSim.
+
+
+
+OBJECTIVE:
+
+To Simulate a cloud scenario using CloudSim and run a scheduling algorithm that is not present in CloudSim
+
+PROCEDURE:
+Step1: Download Cloudsim3.0.3 zip file and extract it.
+Step2: Download Commons math 3.3.6.1 zip file and extract it.
+Step3: Copy Commons-math-3.3.6.1 jar file from Common math3.3.6.1 folder  and paste to
+/Cloudsim3.0.3/ Cloudsim3.0.3/Jars/
+Step4: Open up Eclipse and Click on FileJava Project
+
+Step2: .Enter project name. (I have named it as CloudIntro)
+
+In the next line you will see the path where your project will be created. Uncheck Use default location
+
+Click on Browse and set path as /Downloads/CloudSim-3.0.3/ CloudSim-3.0.3/ 3.Next You need to select the JRE environment as java1.8.
+Click on Next Button , all the jar files in CloudSim-3.0.3 will be displayed.
+
+
+
+
+Finally Click Finish
+
+
+An empty project named CloudIntro will be created in the project List.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.
+Finally the cloud sim is installed into your Eclipse environment.
+
+Open examples java file and try executing the example program by clicking on to RUN Button on the Menu bar.
+
+Output will be displayed on the console window below the program.
+
+
+
+
+
+Program:
+
+First come first serve scheduling:
+
+public void bindCloudletsToVmsSimple(){ int cloudletNum=cloudletList.size();
+int vmNum=vmList.size(); int idx=0;
+for(int i=0;i<cloudletNum;i++){ cloudletList.get(i).setVmId(vmList.get(idx).getId()); idx=(idx+1)%vmNum;
+}
+}
+
+Our own Shortest First:
+
+public void bindCloudletToVmsScheduling(){ int cloudletNum=cloudletList.size();
+int vmNum=vmList.size();
+double[] vmLoad=new double[vmNum]; int idx=0;
+
+cloudletList.get(0).setVmId(vmList.get(0).getId()); vmLoad[0]+=cloudletList.get(0).getCloudletLength()/vmList.get(0).getMips(); for(int j=1;j<cloudletNum;j++){
+for(int i=0;i<vmNum;i++){ if(vmLoad[i]<vmLoad[idx]){ idx=i;
+}
+}
+
+cloudletList.get(j).setVmId(vmList.get(idx).getId()); vmLoad[idx]+=cloudletList.get(j).getCloudletLength()/vmList.get(idx).getMips();
+}
+}
+
+
+
+Both methods are to be put in DatacenterBroker.java in the CloudSim package In the example code, use broker.bindCloudletToVmsScheduling();
+Output:
+========== OUTPUT ==========
+Cloudlet ID	STATUS	Data center ID	VM ID	Time	Start Time	Finish Time
+0
+SUCCESS
+2
+0
+60
+0.1
+60.1
+2
+SUCCESS
+2
+0
+70
+60.1
+130.1
+1
+SUCCESS
+2
+1
+140
+0.1
+140.1
+ExtendedExample finished!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RESULT:
+Thus the cloud scenario using CloudSim to run a scheduling algorithm that is not present in CloudSim has been executed successfully.
+
+
+
+
+Ex.No.10
+Date:
+Find a procedure to transfer the files from one virtual machine to another
+virtual machine.
+
+AIM:
+
+To transfer the files from one virtual machine to another virtual machine,
+
+PROCEDURE:
+
+Step 1: Open VMware and login to Ubuntu.
+Step 2: Right click on Ubuntu 64-bit from the left side of VMware Workstation , and select Settings.
+
+Step 3 : An Virtual Machine settings window will open , Click on the Options tab.
+
+Step 4 : Under Options , click on Shared Folders and select Always enabled radio button.
+
+Step 5 : Click on Add button and Next button in a Add shared Folder wizard.
+
+
+Step 6 : Click on Browse button and select the folder that has to be shared.
+
+Step 7 : Click on Next button in the above Add Shared Folder wizard. In Specify Shared Folder Attributes click on Enable this share check box and click on Finish button.
+
+
+Step 8 : Click on OK button of Virtual Machine Settings wizard.
+
+
+ubuntu@ubuntu:~$ vmware-hgfsclient
+Linux_shared_files
+Step 9 : Next Login to Ubuntu user and open the terminal to check the shared files. Step 10 : On typing the below command , the shared files name will be displayed.
+
+
+Step11 : Else open the folder /computer/mnt/hgfs and check
+
+
+Step12 : Create new folder named hadoop to the Linux_shared_files folder which is being shared from windows10.
+
+ubuntu@ubuntu:~$ cd /mnt/hgfs/Linux_shared_files/ ubuntu@ubuntu:/mnt/hgfs/Linux_shared_files$ mkdir hadoop
+
+
+Step 13: To verify it type ls to display the folder contents.
+
+ubuntu@ubuntu:/mnt/hgfs/Linux_shared_files$ ls h1 hadoop  Hadoop_1
+
+
+Step 14 : Now move the Hadoop-1 file to the hadoop folder created under Linux_shared_files
+and verify it using ls command.
+
+ubuntu@ubuntu:/mnt/hgfs/Linux_shared_files$ mv Hadoop_1
+/mnt/hgfs/Linux_shared_files/hadoop/ ubuntu@ubuntu:/mnt/hgfs/Linux_shared_files$ ls h1 hadoop
+
+
+Step 15 : Now copy the contents of h1 file to new file named Hadoop_commands.
+
+ubuntu@ubuntu:/mnt/hgfs/Linux_shared_files$ cp h1 hadoop_commands.txt ubuntu@ubuntu:/mnt/hgfs/Linux_shared_files$ ls
+h1 hadoop hadoop_commands.txt
+
+
+Can be verified in windows as well as shown in the image below,
+
+
+The file contents of h1 being copied to hadoop_commands can be verified in both Ubuntu and
+windows as shown below.
+
+
+
+
+
+
+
+
+
+
+
+
+
+RESULT:
+Thus the implementation of file transfer from one virtual machine to another virtual machine has been executed successfully.
+
+
+
+
+
+
+Ex No : 12	IMPLEMENT WORD COUNT USING MAPREDUCE DATE :
+
+OBJECTIVE:
+Word count program to demonstrate the use of Map and Reduce tasks
+
+PROCEDURE:
+STEPS:
+Analyze the input file content
+Develop the code
+Writing a map function
+Writing a reduce function
+Writing the Driver class
+Compiling the source
+Building the JAR file
+Starting the DFS
+Creating Input path in HDFS and moving the data into Input path
+Executing the program
+
+Steps
+
+Open Eclipse and create new Java Project
+File -> New -> Java Project
+
+
+
+Enter the project name as WordCount , select JavaSE-1.8 and click on Finish Button.
+
+
+Right click on WordCount Project under Package Explorer and go to properties in Eclipse IDE.
+
+Under Libraries click Add External JARs
+From the hadoop installed directory /usr/local/hadoop add the following jar files.
+hadoop-common-2.7.7.jar from the path /usr/local/hadoop/share/hadoop/common
+common-cli-1.2.jar from the path /usr/local/hadoop/share/hadoop/common/lib
+hadoop-mapreduce-client-core-2.7.7.jar from the path
+/usr/local/hadoop/share/hadoop/mapreduce
+
+
+
+Right click on src NewPackage
+Enter the package name as WordCount and click on Finish Button.
+
+Right click on Package under srcNewClass
+
+Add new Class name as WordCount.java.
+Type in the java code.
+
+Sample Program:
+
+package WordCount;
+
+import java.io.IOException; import java.util.StringTokenizer;
+import org.apache.hadoop.conf.Configuration; import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable; import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job; import org.apache.hadoop.mapreduce.Mapper; import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat; import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat; public class WordCount {
+
+public static class TokenizerMapper
+extends Mapper<Object, Text, Text, IntWritable>{ private final static IntWritable one = new IntWritable(1); private Text word = new Text();
+public void map(Object key, Text value, Context context
+) throws IOException, InterruptedException { StringTokenizer itr = new StringTokenizer(value.toString()); while (itr.hasMoreTokens()) {
+word.set(itr.nextToken()); context.write(word, one);
+}
+
+public static class IntSumReducer
+extends Reducer<Text,IntWritable,Text,IntWritable> { private IntWritable result = new IntWritable();
+
+public void reduce(Text key, Iterable<IntWritable> values,
+Context context
+) throws IOException, InterruptedException {
+int sum = 0;
+for (IntWritable val : values) { sum += val.get();
+}
+result.set(sum); context.write(key, result);
+}
+}
+public static void main(String[] args) throws Exception { Configuration conf = new Configuration();
+Job job = Job.getInstance(conf, "word count"); job.setJarByClass(WordCount.class); job.setMapperClass(TokenizerMapper.class); job.setCombinerClass(IntSumReducer.class); job.setReducerClass(IntSumReducer.class); job.setOutputKeyClass(Text.class); job.setOutputValueClass(IntWritable.class); FileInputFormat.addInputPath(job, new Path(args[0])); FileOutputFormat.setOutputPath(job, new Path(args[1])); System.exit(job.waitForCompletion(true) ? 0 : 1);
+}
+}
+
+Make sure there are no errors in code typing. Then Right click on Project WordCount Export.
+
+
+Select JAR file option under Java.
+
+
+Click Next. Uncheck all other resources. Then provide path for exporting .jar file. It could be any path but remember where you exported it. You need this path for running jar file later.
+
+
+
+
+Keep options selected as below.
+
+Click Next and Finish.
+
+
+Input Text File:
+
+Input.txt :
+
+hi how are you
+welcome to velammal engineering college We are from computer science department
+Today we are gonna learn about mapreduce concept
+Then we will apply the mapreduce programming knowlege to process the text file
+The output printed should be the count of occurrences of each word in the text file
+here ends our today program so bye.
+
+Compiling the source:
+Step 1: Starting all the HDFS services (if not running already) # start-dfs.sh
+vecuser@ubuntu:~$ start-dfs.sh
+Java HotSpot(TM) Client VM warning: You have loaded library
+/usr/local/hadoop-2.7.7/lib/native/libhadoop.so.1.0.0 which might have disabled stack guard. The VM will try to fix the stack guard now.
+It's highly recommended that you fix the library with 'execstack -c
+<libfile>', or link it with '-z noexecstack'.
+19/03/20 04:29:12 WARN util.NativeCodeLoader: Unable to load native- hadoop library for your platform... using builtin-java classes where applicable
+Starting namenodes on [localhost] vecuser@localhost's password:
+localhost: starting namenode, logging to /usr/local/hadoop- 2.7.7/logs/hadoop-vecuser-namenode-ubuntu.out
+localhost: Java HotSpot(TM) Client VM warning: You have loaded library
+/usr/local/hadoop-2.7.7/lib/native/libhadoop.so.1.0.0 which might have disabled stack guard. The VM will try to fix the stack guard now. localhost: It's highly recommended that you fix the library with 
+'execstack -c <libfile>', or link it with '-z noexecstack'. vecuser@localhost's password:
+localhost: starting datanode, logging to /usr/local/hadoop- 2.7.7/logs/hadoop-vecuser-datanode-ubuntu.out
+Starting secondary namenodes [0.0.0.0] vecuser@0.0.0.0's password:
+0.0.0.0: starting secondarynamenode, logging to /usr/local/hadoop- 2.7.7/logs/hadoop-vecuser-secondarynamenode-ubuntu.out
+0.0.0.0: Java HotSpot(TM) Client VM warning: You have loaded library
+/usr/local/hadoop-2.7.7/lib/native/libhadoop.so.1.0.0 which might have disabled stack guard. The VM will try to fix the stack guard now.
+
+0.0.0.0: It's highly recommended that you fix the library with 'execstack -c <libfile>', or link it with '-z noexecstack'.
+Java HotSpot(TM) Client VM warning: You have loaded library
+/usr/local/hadoop-2.7.7/lib/native/libhadoop.so.1.0.0 which might have disabled stack guard. The VM will try to fix the stack guard now.
+It's highly recommended that you fix the library with 'execstack -c
+<libfile>', or link it with '-z noexecstack'.
+19/03/20 04:29:36 WARN util.NativeCodeLoader: Unable to load native- hadoop library for your platform... using builtin-java classes where applicable
+
+# start-yarn.sh
+vecuser@ubuntu:~$ start-yarn.sh starting yarn daemons
+starting resourcemanager, logging to /usr/local/hadoop/logs/yarn- vecuser-resourcemanager-ubuntu.out
+vecuser@localhost's password:
+localhost: starting nodemanager, logging to /usr/local/hadoop- 2.7.7/logs/yarn-vecuser-nodemanager-ubuntu.out
+
+# jps
+vecuser@ubuntu:~$ jps 4289
+11300 DataNode
+11638 ResourceManager
+12138 Jps
+11147 NameNode
+11485 SecondaryNameNode
+11949 NodeManager
+Step 2: Creating Input path in HDFS and moving the data into Input path # hadoop fs –mkdir /WordCount
+vecuser@ubuntu:~$ hadoop fs -mkdir /WordCount
+Java HotSpot(TM) Client VM warning: You have loaded library
+/usr/local/hadoop-2.7.7/lib/native/libhadoop.so.1.0.0 which might have disabled stack guard. The VM will try to fix the stack guard now.
+It's highly recommended that you fix the library with 'execstack -c
+<libfile>', or link it with '-z noexecstack'.
+19/03/20 05:21:01 WARN util.NativeCodeLoader: Unable to load native- hadoop library for your platform... using builtin-java classes where applicable
+
+# hadoop fs –mkdir /WordCount/Input
+vecuser@ubuntu:~$ hadoop fs -mkdir /WordCount/Input
+Java HotSpot(TM) Client VM warning: You have loaded library
+/usr/local/hadoop-2.7.7/lib/native/libhadoop.so.1.0.0 which might have disabled stack guard. The VM will try to fix the stack guard now.
+
+It's highly recommended that you fix the library with 'execstack -c
+<libfile>', or link it with '-z noexecstack'.
+19/03/20 05:21:08 WARN util.NativeCodeLoader: Unable to load native- hadoop library for your platform... using builtin-java classes where applicable
+
+# hadoop fs –put ‘home/hduser/Desktop/WordCount/Input/Input.txt’ /WordCount/Input Executing the program
+vecuser@ubuntu:~$ hadoop fs -put '/home/vecuser/Desktop/WordCount/Input/Input.txt' /WordCount/Input Java HotSpot(TM) Client VM warning: You have loaded library
+/usr/local/hadoop-2.7.7/lib/native/libhadoop.so.1.0.0 which might have disabled stack guard. The VM will try to fix the stack guard now.
+It's highly recommended that you fix the library with 'execstack -c
+<libfile>', or link it with '-z noexecstack'.
+19/03/20 05:22:43 WARN util.NativeCodeLoader: Unable to load native- hadoop library for your platform... using builtin-java classes where applicable
+
+Step 3 : Executing the program
+
+# hadoop jar ‘home/hduser/Desktop/WordCount/First.jar’ WordCount /WordCount/Input/Input.txt
+/WordCount/Output
+vecuser@ubuntu:~$ hadoop jar '/home/vecuser/Desktop/WordCount/first.jar' WordCount.WordCount
+/WordCount/Input/Input.txt /WordCount/Output
+Java HotSpot(TM) Client VM warning: You have loaded library
+/usr/local/hadoop-2.7.7/lib/native/libhadoop.so.1.0.0 which might have disabled stack guard. The VM will try to fix the stack guard now.
+It's highly recommended that you fix the library with 'execstack -c
+<libfile>', or link it with '-z noexecstack'.
+19/03/20 08:24:24 WARN util.NativeCodeLoader: Unable to load native- hadoop library for your platform... using builtin-java classes where applicable
+19/03/20 08:24:25 INFO client.RMProxy: Connecting to ResourceManager at
+/0.0.0.0:8032
+19/03/20 08:24:25 WARN mapreduce.JobResourceUploader: Hadoop command- line option parsing not performed. Implement the Tool interface and execute your application with ToolRunner to remedy this.
+19/03/20 08:24:26 INFO input.FileInputFormat: Total input paths to process : 1
+19/03/20 08:24:26 INFO mapreduce.JobSubmitter: number of splits:1 19/03/20 08:24:26 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1553095119373_0001
+19/03/20 08:24:27 INFO impl.YarnClientImpl: Submitted application application_1553095119373_0001
+
+19/03/20 08:24:27 INFO mapreduce.Job: The url to track the job: http://ubuntu:8088/proxy/application_1553095119373_0001/ 19/03/20 08:24:27 INFO mapreduce.Job: Running job: job_1553095119373_0001
+19/03/20 08:24:34 INFO mapreduce.Job: Job job_1553095119373_0001 running in uber mode : false
+19/03/20 08:24:34 INFO mapreduce.Job: map 0% reduce 0%
+19/03/20 08:24:39 INFO mapreduce.Job: map 100% reduce 0%
+19/03/20 08:24:46 INFO mapreduce.Job: map 100% reduce 100% 19/03/20 08:24:47 INFO mapreduce.Job: Job job_1553095119373_0001 completed successfully
+19/03/20 08:24:47 INFO mapreduce.Job: Counters: 49 File System Counters
+FILE: Number of bytes read=588
+FILE: Number of bytes written=246271 FILE: Number of read operations=0
+FILE: Number of large read operations=0 FILE: Number of write operations=0 HDFS: Number of bytes read=456
+HDFS: Number of bytes written=390 HDFS: Number of read operations=6
+HDFS: Number of large read operations=0 HDFS: Number of write operations=2
+Job Counters
+Launched map tasks=1 Launched reduce tasks=1 Data-local map tasks=1
+Total time spent by all maps in occupied slots (ms)=2832 Total time spent by all reduces in occupied slots
+
+(ms)=3738
+
+
+
+tasks=2899968 tasks=3827712
+
+Total time spent by all map tasks (ms)=2832 Total time spent by all reduce tasks (ms)=3738
+Total vcore-milliseconds taken by all map tasks=2832 Total vcore-milliseconds taken by all reduce tasks=3738 Total megabyte-milliseconds taken by all map
+
+Total megabyte-milliseconds taken by all reduce
+
+Map-Reduce Framework
+Map input records=8 Map output records=59 Map output bytes=579
+Map output materialized bytes=588 Input split bytes=112
+Combine input records=59 Combine output records=48 Reduce input groups=48 Reduce shuffle bytes=588
+
+Reduce input records=48 Reduce output records=48 Spilled Records=96 Shuffled Maps =1
+Failed Shuffles=0 Merged Map outputs=1
+GC time elapsed (ms)=146 CPU time spent (ms)=910
+Physical memory (bytes) snapshot=250523648 Virtual memory (bytes) snapshot=652423168 Total committed heap usage (bytes)=137498624
+Shuffle Errors
+BAD_ID=0 CONNECTION=0 IO_ERROR=0 WRONG_LENGTH=0 WRONG_MAP=0 WRONG_REDUCE=0
+File Input Format Counters Bytes Read=344
+File Output Format Counters Bytes Written=390
+Please note that this program will read all text files from input folder on HDFS and count total number of words in each file. Output is stored under output folder on HDFS.
+Once run is successful, you should see below 2 files in output folder. hadoop fs -ls output
+-rw-r--r-- 1 hduser supergroup	0 2021-10-19 13:54 output/_SUCCESS
+-rw-r--r-- 1 hduser supergroup	73 2021-10-19 13:54 output/part-r-00000
+_SUCCESS file is an empty file indicating RUN was successful. To see output of run, view part-r- 00000 file.
+OUTPUT :
+
+Step 5 : To View the Output file
+
+# hadoop dfs –cat /WordCount/Output/part-r-00000
+vecuser@ubuntu:~$ hadoop fs -cat /WordCount/Output/part-r-00000 Java HotSpot(TM) Client VM warning: You have loaded library
+/usr/local/hadoop-2.7.7/lib/native/libhadoop.so.1.0.0 which might have disabled stack guard. The VM will try to fix the stack guard now.
+It's highly recommended that you fix the library with 'execstack -c
+<libfile>', or link it with '-z noexecstack'.
+19/10/21 14:25:40 WARN util.NativeCodeLoader: Unable to load native- hadoop library for your platform... using builtin-java classes where applicable
+
+The
+1
+Then
+1
+Today
+1
+We
+1
+about
+1
+apply
+1
+are
+3
+be
+1
+bye.
+1
+college	1
+computer	1
+concept	1
+count 1
+department	1
+each	1
+ends	1
+engineering	1
+file	2
+from	1
+gonna 1
+here	1
+hi	1
+how	1
+in	1
+knowlege	1
+learn 1
+mapreduce	2
+occurrences	1
+of	2
+our	1
+output 1
+printed	1
+process	1
+program	1
+programming	1
+science	1
+should 1
+so	1
+text	2
+the	4
+to	2
+today 1
+velammal	1
+we	2
+welcome	1
+will	1
+word	1
+you	1
+RESULT:
+Thus the Word count program to use Map and reduce tasks is demonstrated successfully.
+
+        </code>
+
+    </pre>
+    <br>
+    <hr>
+    <pre>
+        <code>
+ROW AND COLUMN TRANSPOSITION:
+import java.util.*;
+public class ColTrans {
+private static Scanner in;
+public static void main(String[] args){
+System.out.println("Columnar Transposition 
+Cipher");
+in = new Scanner(System.in);
+System.out.print("1. Encryption\n2. 
+Decryption\nChoose(1,2): ");
+int choice = in.nextInt();
+in.nextLine();
+if (choice == 1){
+System.out.println("Encryption");
+encryption();
+} else if (choice == 2){
+System.out.println("Decryption");
+decryption();
+System.out.println("Invalid Choice");
+System.exit(0);
+}
+}
+private static void encryption(){
+System.out.print("Enter Message: ");
+String plainText = 
+in.nextLine().toUpperCase().replace(" ", "");
+StringBuilder msg = new
+StringBuilder(plainText);
+System.out.print("Enter Keyword: ");
+String keyword = in.nextLine().toUpperCase();
+int[] kywrdNumList = 
+keywordNumAssign(keyword);
+for (int i = 0, j = 1; i < keyword.length(); 
+i++, j++) {
+System.out.print(keyword.substring(i, j) + " 
+");
+}
+System.out.println();
+for (int i: kywrdNumList){
+System.out.print(i + " ");
+}
+System.out.println();
+System.out.println("-------------------------
+");
+System.out.println();
+int extraLetters = msg.length() % 
+keyword.length();
+//System.out.println(extraLetters);
+int dummyCharacters = keyword.length() -
+extraLetters;
+// System.out.println(dummyCharacters);
+if (extraLetters != 0){
+for (int i = 0; i < dummyCharacters; i++) {
+msg.append(".");
+}
+}
+int numOfRows = msg.length() / 
+keyword.length();
+char[][] arr = new
+char[numOfRows][keyword.length()];
+int z = 0;
+for (int i = 0; i < numOfRows; i++) {
+for (int j = 0; j < keyword.length(); j++) {
+arr[i][j] = msg.charAt(z);
+z++;
+}
+}
+for (int i= 0; i < numOfRows; i++) {
+for (int j = 0; j < keyword.length(); j++)
+{
+System.out.print(arr[i][j] + " ");
+}
+System.out.println();
+}
+StringBuilder cipherText = new
+StringBuilder();
+System.out.println();
+String numLoc = getNumberLocation(keyword, 
+kywrdNumList);
+System.out.println("Location of numbers: " + 
+numLoc);
+System.out.println();
+for (int l = 0, k = 0; l < numOfRows; l++, 
+k++) {
+int d;
+if (k == keyword.length()){
+break;
+} else {
+d = 
+Character.getNumericValue(numLoc.charAt(k));
+}
+for (int j = 0; j < numOfRows; j++) {
+cipherText.append(arr[j][d]);
+}
+}
+System.out.println("Cipher Text: " + 
+cipherText);
+}
+private static void decryption(){
+System.out.print("Enter Message: ");
+String msg = 
+in.nextLine().toUpperCase().replace(" ", "");
+System.out.print("Enter Keyword: ");
+String keyword = in.nextLine().toUpperCase();
+int numOfRows = msg.length() / 
+keyword.length();
+char[][] arr = new
+char[numOfRows][keyword.length()];
+int[] kywrdNumList = 
+keywordNumAssign(keyword);
+String numLoc = getNumberLocation(keyword, 
+kywrdNumList);
+for (int i = 0, k = 0; i < msg.length(); i++, 
+k++) {
+int d = 0;
+if (k == keyword.length()){
+k = 0;
+} else {
+d = 
+Character.getNumericValue(numLoc.charAt(k));
+}
+for (int j = 0; j < numOfRows; j++, i++) {
+arr[j][d] = msg.charAt(i);
+} // for loop
+--i;
+}
+StringBuilder plainText = new StringBuilder();
+for (int i = 0; i < numOfRows; i++) {
+for (int j = 0; j < keyword.length(); j++) {
+plainText.append(arr[i][j]);
+}
+}
+System.out.println("Plain Text: " + 
+plainText);
+}
+private static String getNumberLocation(String 
+keyword, int[]
+kywrdNumList) {
+String numLoc = "";
+for (int i = 1; i < keyword.length() + 1; i++) 
+{
+for (int j = 0; j < keyword.length(); j++) {
+if (kywrdNumList[j] == i){
+numLoc += j;
+}
+}
+}
+return numLoc;
+}
+private static int[] keywordNumAssign(String 
+keyword) {
+String alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+int[] kywrdNumList = new
+int[keyword.length()];
+int init = 0;
+for (int i = 0; i < alpha.length(); i ++){
+for (int j = 0; j < keyword.length(); j++) {
+if (alpha.charAt(i) == keyword.charAt(j)){
+init++;
+kywrdNumList[j] = init;
+}
+}
+}
+return kywrdNumList;
+}
+}
+Columnar Transposition Cipher
+1. Encryption
+2. Decryption
+Choose(1,2): 1
+Encryption
+Enter Message: I LIKE POTATOES BECAUSE THEY ARE TASTY
+Enter Keyword: POTATO
+P O T A T O 
+4 2 5 1 6 3 
+-------------------------
+I L I K E P 
+O T A T O E 
+S B E C A U 
+S E T H E Y 
+A R E T A S 
+T Y . . . . 
+Location of numbers: 315024
+Cipher Text: KTCHT.LTBERYPEUYS.IOSSATIAETE.EOAEA.
+Columnar Transposition Cipher
+1. Encryption
+2. Decryption
+Choose(1,2): 2
+Decryption
+Enter Message: KTCHT.LTBERYPEUYS.IOSSATIAETE.EOAEA.
+Enter Keyword: POTATO
+Plain Text: ILIKEPOTATOESBECAUSETHEYARETASTY....
+Invalid Choice
+        </code>
+    </pre>
+</body>
+
+</html>
